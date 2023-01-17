@@ -1,0 +1,11 @@
+node_modules
+build
+.vscode
+yarn-error.log
+.idea
+aries-framework-javascript-*.tgz
+src/lib/__tests__/genesis-von.txn
+coverage
+.DS_Store
+logs.txt
+logs/
