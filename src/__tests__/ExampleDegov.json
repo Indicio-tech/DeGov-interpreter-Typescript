@@ -8,7 +8,7 @@
     "format": "1.0",
     "id": "c64846d1-cf60-4ac5-835e-cbd25569f2fa",
     "uri": "htpps://degov.com/proven.json",
-    "refresh_rate": 300,
+    "ttl": 300,
     "description": "This document describes email and employment governance in a machine readable way",
     "last_updated": 1673307432,
     "docs_uri": "https://url-for-docs...",

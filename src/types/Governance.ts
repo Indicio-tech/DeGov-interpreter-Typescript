@@ -7,9 +7,9 @@ export interface GovernanceFile {
     id: UUID
     uri: string
     description: string
-    lastUpdated: Date
+    last_updated: number | Date
     ttl: number
-    docsUri: string
+    docs_uri: string
     schemas: Schema[]
     [property: string | number | symbol]: any
 }
