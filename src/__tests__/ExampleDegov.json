@@ -1,0 +1,85 @@
+{
+    "@context": [
+      "https://github.com/hyperledger/aries-rfcs/blob/main/concepts/0430-machine-readable-governance-frameworks/context.jsonld"
+    ],
+    "author": "did:example:viacheslavnazarenko",
+    "name": "Proven Ecosystem Governance",
+    "version": "0.1",
+    "format": "1.0",
+    "id": "c64846d1-cf60-4ac5-835e-cbd25569f2fa",
+    "uri": "htpps://degov.com/proven.json",
+    "refresh_rate": 300,
+    "description": "This document describes email and employment governance in a machine readable way",
+    "last_updated": 1673307432,
+    "docs_uri": "https://url-for-docs...",
+    "schemas": [
+      {
+        "id": "BXtzYPyPdiVKGAjkqtPexs:2:Email:1.0",
+        "name": "Email Credential Issuer"
+      },
+      {
+        "id": "QHqtjywxfP3yYsFrRHFLQm:2:Employment:1.0",
+        "name": "Employment Credential Issuer"
+      }
+    ],
+    "participants": {
+      "id": "1e762324-6a45-4f6a-b124-ecb21190fe09",
+      "author": "did:example:viacheslavnazarenko",
+      "created": 1673307432,
+      "version": 2,
+      "topic": "uri:to-multi-topic-schema",
+      "entries": {
+        "https://example.com/roles.schema.json": {
+          "U9FXudo8rdCgsrpQ5EG2YY": {
+            "roles": [
+              "email_issuer",
+              "employment_issuer"
+            ]
+          },
+          "WdvgJP7fwfvCrKupRRhDEu": {
+            "roles": [
+              "email_verifier",
+              "employment_verifier"
+            ]
+          }
+        },
+        "https://example.com/description.schema.json": {
+          "U9FXudo8rdCgsrpQ5EG2YY": {
+            "name": "Proven issuer agency",
+            "website": "issuinggovernmentsite.org",
+            "email": "credential_manager@issuinggovernmentsite.org",
+            "phone": "123-456-6780"
+          },
+          "WdvgJP7fwfvCrKupRRhDEu": {
+            "name": "Proven verifier agency",
+            "website": "verifyinglabsite.com",
+            "email": "credential_manager@verifyinglabsite.com",
+            "phone": "098-765-4321"
+          }
+        }
+      }
+    },
+    "roles": {
+      "role_1": {
+        "issue": [
+          "QHqtjywxfP3yYsFrRHFLQm:2:Employment:1.0",
+          ""
+        ],
+        "verify": [
+          "",
+          ""
+        ]
+      },
+      "role_2": {
+        "issue": [
+          "BXtzYPyPdiVKGAjkqtPexs:2:Email:1.0"
+        ],
+        "granted_by": "presentation_definition_file_to_describe_proof"
+      },
+      "role_3": {
+        "verify": [
+          "BXtzYPyPdiVKGAjkqtPexs:2:Email:1.0"
+        ]
+      }
+    }
+  }
