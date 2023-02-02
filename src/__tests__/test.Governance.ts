@@ -1,4 +1,4 @@
-import { GovernanceFile } from "../types/governance";
+import { GovernanceFile } from "../types/Governance";
 
 const governance: GovernanceFile = {
   "@context": [
