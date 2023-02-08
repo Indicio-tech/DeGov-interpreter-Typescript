@@ -19,15 +19,17 @@ export class degovService {
     }
     //remove a file from the storage
     public async removeFile(url: string){
-
+        delete this.governanceFiles[url]
     }
     //add a file to storage
     public async addFile(url: string){
-        
+        const GovFile = await fetch(url)
+        const lastFetched = new Date()
+        this.governanceFiles[url] = { GovFile, lastFetched }
     }
     //get the file for this url and check the ttl time to determine if refetch needs to occur
     public async getFile(url: string){
-        //get the file for this url and check the ttl time to determine if refetch needs to occur
+        
     }
     //check the did against all degov files. Refetching if the time has expired
     public async checkDid(did: string){
