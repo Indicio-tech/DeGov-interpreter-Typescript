@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios'
 
 export async function fetch(url: string): Promise<AxiosResponse<any, any>> {
     const result = await axios.get(url)
-    return result
+    return result //strip file from response and return
 }
 
 export async function fetchAll(urls: string[]): Promise<string[]> {
