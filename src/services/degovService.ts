@@ -29,7 +29,14 @@ export class degovService {
     }
     //get the file for this url and check the ttl time to determine if refetch needs to occur
     public async getFile(url: string){
-        
+        let GovFile: GovernanceFile = this.governanceFiles[url].GovFile
+        const last = this.governanceFiles[url].lastFetched
+        const ttl = GovFile.ttl
+        const lastFetched: Date = new Date()
+        if(lastFetched.getMinutes() - last.getMinutes() > ttl ) {
+            this.refetchFile(url)
+        }
+        return GovFile
     }
     //check the did against all degov files. Refetching if the time has expired
     public async checkDid(did: string){
@@ -37,6 +44,8 @@ export class degovService {
     }
     //fetch the file from the given url and update the storage
     private async refetchFile(url: string) {
-        
+        const GovFile = await fetch(url)
+        const lastFetched = new Date()
+        this.governanceFiles[url] = { GovFile, lastFetched}
     }
 }
