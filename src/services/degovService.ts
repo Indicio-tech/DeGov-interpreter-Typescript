@@ -23,7 +23,7 @@ export class degovService {
     }
     //add a file to storage
     public async addFile(url: string){
-        const GovFile = await fetch(url)
+        const GovFile = await this.fetchFile(url)
         const lastFetched = new Date()
         this.governanceFiles[url] = { GovFile, lastFetched }
     }
@@ -34,7 +34,7 @@ export class degovService {
         const ttl = GovFile.ttl
         const lastFetched: Date = new Date()
         if(lastFetched.getMinutes() - last.getMinutes() > ttl ) {
-            this.refetchFile(url)
+            return await this.refetchFile(url)
         }
         return GovFile
     }
@@ -43,9 +43,18 @@ export class degovService {
         
     }
     //fetch the file from the given url and update the storage
-    private async refetchFile(url: string) {
-        const GovFile = await fetch(url)
+    private async refetchFile(url: string): Promise<GovernanceFile> {
+        const GovFile = await this.fetchFile(url)
         const lastFetched = new Date()
         this.governanceFiles[url] = { GovFile, lastFetched}
+        return GovFile
+    }
+
+    private async fetchFile(url: string): Promise<GovernanceFile>{
+        const lastFetched = new Date()
+        const response = await fetch(url)
+        const GovFile = JSON.parse(response.data) as GovernanceFile
+        this.governanceFiles[url] = { GovFile, lastFetched }
+        return GovFile
     }
 }

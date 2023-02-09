@@ -1,9 +1,9 @@
 import axios, { AxiosResponse } from 'axios'
 import { GovernanceFile } from '../types'
 
-export async function fetch(url: string): Promise<GovernanceFile> {
+export async function fetch(url: string): Promise<AxiosResponse> {
     const result: AxiosResponse = await axios.get(url)
-    return JSON.parse(result.data) as GovernanceFile //strip file from response and return
+    return result //strip file from response and return
 }
 
 export async function fetchAll(urls: string[]): Promise<string[]> {
