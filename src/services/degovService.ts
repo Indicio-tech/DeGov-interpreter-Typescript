@@ -1,9 +1,6 @@
 import { GovernanceFile } from "../types";
-import { Fetching } from "../utils";
 import type fetch from "node-fetch";
-import { nodeFetching } from "../utils/nodeFetching";
-import { axiosFetching } from "../utils/axiosFetching"
-import axios from "axios";
+import { Fetching } from "../utils";
 
 export interface governanceFiles{
     [degGovUrl: string]: { GovFile: GovernanceFile, lastFetched: Date }
@@ -11,19 +8,13 @@ export interface governanceFiles{
 
 export class degovService {
     private governanceFiles: governanceFiles = {}
-    private fetch: Fetching | undefined
-    public constructor(someFetch?: typeof fetch, someAxios?: typeof axios){
-        if(someFetch)
-            this.fetch = new nodeFetching(someFetch)
-        if(someAxios && !this.fetch)
-            this.fetch = new axiosFetching(axios)
-        if(!this.fetch)
-            throw new Error("must define some form of fethc or axios")
-
+    private fetch: Fetching
+    public constructor(Fetch: typeof fetch){
+        this.fetch = new Fetching(Fetch)
     }
     //retreives and sets the storage to conatin all degov files in the input array
     public async setFiles(urls: [string]){
-        const files = await this.fetch!.fetchAll(urls)
+        const files = await this.fetch.fetchAll(urls)
         files.map((file, index) => {
             //add each file to the object with url as key
         })
