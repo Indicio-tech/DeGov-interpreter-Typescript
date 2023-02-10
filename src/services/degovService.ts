@@ -16,7 +16,9 @@ export class degovService {
     public async setFiles(urls: [string]){
         const files = await this.fetch.fetchAll(urls)
         files.map((file, index) => {
-            //add each file to the object with url as key
+            const lastFetched = new Date()
+            const GovFile = JSON.parse(file)
+           this.governanceFiles[urls[index]] = {GovFile, lastFetched}
         })
     }
     //remove a file from the storage
