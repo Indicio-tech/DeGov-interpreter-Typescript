@@ -30,14 +30,15 @@ export interface Participant  {
 }
 
 export interface Entry {
-    [did: string] : {
-        roles : string[]
-    } | {
-        name: string 
-        website: string
-        email: string
-        phone: string
-    }
+    [did: string] : any 
+    // {
+    //     roles : string[]
+    // } | {
+    //     name: string 
+    //     website: string
+    //     email: string
+    //     phone: string
+    // }
 }
 
 // Testing out pattern string types

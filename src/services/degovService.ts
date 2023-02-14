@@ -44,7 +44,11 @@ export class degovService {
     }
     //check the did against all degov files. Refetching if the time has expired
     public async checkDid(did: string){
-        
+        for(const url in this.governanceFiles){
+            const file = await this.getFile(url)
+            if(await this.checkFileForDid(did, file)) return true
+        }
+        return false
     }
     //fetch the file from the given url and update the storage
     private async refetchFile(url: string): Promise<GovernanceFile> {
@@ -69,5 +73,6 @@ export class degovService {
             const found = entry[did]
             if(found) return true
         }
+        return false
     }
 }
