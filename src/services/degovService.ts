@@ -1,4 +1,4 @@
-import { GovernanceFile } from "../types";
+import { GovernanceFile, JsonURI } from "../types";
 import type fetch from "node-fetch";
 import { Fetching } from "../utils";
 
@@ -56,9 +56,18 @@ export class degovService {
 
     private async fetchFile(url: string): Promise<GovernanceFile>{
         const lastFetched = new Date()
-        const response = await this.fetch!.fetchUrl(url)
+        const response = await this.fetch.fetchUrl(url)
         const GovFile = JSON.parse(response) as GovernanceFile
         this.governanceFiles[url] = { GovFile, lastFetched }
         return GovFile
+    }
+
+    private async checkFileForDid(did: string, degov: GovernanceFile){
+        const entries = degov.participants.entries
+        for(const prop in entries) {
+            const entry = entries[prop as JsonURI]
+            const found = entry[did]
+            if(found) return true
+        }
     }
 }

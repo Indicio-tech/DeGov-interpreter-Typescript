@@ -11,6 +11,7 @@ export interface GovernanceFile {
     ttl: number
     docs_uri: string
     schemas: Schema[]
+    participants: Participant
     [property: string | number | symbol]: any
 }
 
@@ -22,19 +23,20 @@ export interface Schema {
 export interface Participant  {
     id: UUID
     author: string
-    created: Date
-    version: string
+    created: Date | number
+    version: string | number
     topic: string
-    entries: {[schemaUri: JsonURI] : ParticipantEntry}
-}
-
-export interface ParticipantEntry {
-    [key: string] : Entry
+    entries: {[schemaUri: JsonURI] : Entry}
 }
 
 export interface Entry {
     [did: string] : {
         roles : string[]
+    } | {
+        name: string 
+        website: string
+        email: string
+        phone: string
     }
 }
 
@@ -43,4 +45,4 @@ type SchemaId = `${string}:${number}:${string}:${number}`
 
 type UUID = `${string}-${string}-${string}-${string}-${string}`
 
-type JsonURI = `${'http://' | 'https://'}${string}${'.json'}`
+export type JsonURI = `${'http://' | 'https://'}${string}${'.json'}`
