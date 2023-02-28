@@ -71,4 +71,4 @@ const governance: GovernanceFile = {
   },
 };
 
-console.log("Context:", governance["@context"])
+console.log("Context:", governance["@context"]);
