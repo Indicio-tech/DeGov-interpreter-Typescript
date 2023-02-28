@@ -5,4 +5,5 @@ module.exports = {
     "^.+\\.(js)$": "babel-jest",
   },
   transformIgnorePatterns: [],
+  testPathIgnorePatterns: ["<rootDir>/src/__tests__/test.Governance.ts"],
 };

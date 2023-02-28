@@ -1,9 +1,8 @@
 import type fetch from "node-fetch";
 
-
-export class Fetching{
+export class Fetching {
   private fetch: typeof fetch;
-  
+
   public constructor(fetching: typeof fetch) {
     this.fetch = fetching;
   }
@@ -16,7 +15,12 @@ export class Fetching{
         "Content-Type": "application/json",
       },
     });
-    return result.text(); //strip file from response and return
+    if (result.status == 200)
+      return result.text(); //strip file from response and return
+    else
+      throw new Error(
+        `An error occured fetching from ${url}, status code: ${result.status}`
+      );
   }
 
   public async fetchAll(urls: string[]): Promise<string[]> {
