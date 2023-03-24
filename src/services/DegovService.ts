@@ -12,7 +12,7 @@ export class DegovService {
   public constructor(fetcher: typeof fetch) {
     this.fetch = new Fetching(fetcher);
   }
-  //retreives and sets the storage to conatin all degov files in the input array 
+  //retreives and sets the storage to conatin all degov files in the input array
   public async setFiles(urls: [string]) {
     const files = await this.fetch.fetchAll(urls);
     files.map((file, index) => {
@@ -22,8 +22,12 @@ export class DegovService {
     });
   }
   //remove a file from the storage
-  public async removeFile(url: string) {
-    delete this.governanceFiles[url];
+  public removeFile(url: string) {
+    if (this.governanceFiles[url]) {
+      delete this.governanceFiles[url];
+    } else {
+      throw Error("File does not exist");
+    }
   }
   //add a file to storage
   public async addFile(url: string) {
@@ -33,14 +37,18 @@ export class DegovService {
   }
   //get the file for this url and check the ttl time to determine if refetch needs to occur
   public async getFile(url: string) {
-    let GovFile: GovernanceFile = this.governanceFiles[url].GovFile;
-    const last = this.governanceFiles[url].lastFetched;
-    const ttl = GovFile.ttl;
-    const lastFetched: Date = new Date();
-    if (lastFetched.getMinutes() - last.getMinutes() > ttl) {
-      return await this.refetchFile(url);
+    if (this.governanceFiles[url]) {
+      let GovFile: GovernanceFile = this.governanceFiles[url].GovFile;
+      const last = this.governanceFiles[url].lastFetched;
+      const ttl = GovFile.ttl;
+      const lastFetched: Date = new Date();
+      if (lastFetched.getMinutes() - last.getMinutes() > ttl) {
+        return await this.refetchFile(url);
+      }
+      return GovFile;
+    } else {
+      throw Error("File does not exist");
     }
-    return GovFile;
   }
   //check the did against all degov files. Refetching if the time has expired
   public async checkDid(did: string) {

@@ -1,6 +1,6 @@
 import { GovernanceFile } from "../types/Governance";
 
-const governance: GovernanceFile = {
+export const governance: GovernanceFile = {
   "@context": [
     "https://github.com/hyperledger/aries-rfcs/blob/main/concepts/0430-machine-readable-governance-frameworks/context.jsonld",
   ],
@@ -70,5 +70,3 @@ const governance: GovernanceFile = {
     },
   },
 };
-
-console.log("Context:", governance["@context"])
