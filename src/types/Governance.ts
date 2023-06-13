@@ -18,6 +18,8 @@ export interface GovernanceFile {
 export interface Schema {
   id: SchemaId;
   name: string;
+  issuer_roles?: string[];
+  verifier_roles?: string[];
 }
 
 export interface Participant {
