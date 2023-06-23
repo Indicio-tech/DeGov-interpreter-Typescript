@@ -13,7 +13,7 @@ export class DegovService {
     this.fetch = new Fetching(fetcher);
   }
   //retreives and sets the storage to conatin all degov files in the input array
-  public async setFiles(urls: [string]) {
+  public async setFiles(urls: string[]) {
     const files = await this.fetch.fetchAll(urls);
     files.map((file, index) => {
       const lastFetched = new Date();
