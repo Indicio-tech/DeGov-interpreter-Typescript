@@ -51,13 +51,14 @@ export class DegovService {
       }
       return GovFile
     } else {
-      throw Error("File does not exist")
+      throw Error(`File with url ${url} does not exist`)
     }
   }
   //check the did against all degov files. Refetching if the time has expired
   public async checkDid(did: string) {
-    for (const url in this.getAllActiveFiles()) {
-      const file = await this.getFile(url)
+    const files = this.getAllActiveFiles()
+    for (let i = 0; i < files.length; i++) {
+      const file = await this.getFile(files[i])
       if (await this.checkFileForDid(did, file)) return true
     }
     return false
@@ -79,11 +80,11 @@ export class DegovService {
    * @returns An array of url strings for the active files in the interpreter
    */
   public getAllActiveFiles() {
-    return Object.entries(this.governanceFiles)
-      .filter((file) => {
-        file[1].active
-      })
-      .map((file) => file[0])
+    const filtered = Object.entries(this.governanceFiles).filter((file) => {
+      return file[1].active
+    })
+    const mapped = filtered.map((file) => file[0])
+    return mapped
   }
 
   /**
@@ -93,7 +94,7 @@ export class DegovService {
   public getAllInactiveFiles() {
     return Object.entries(this.governanceFiles)
       .filter((file) => {
-        !file[1].active
+        return !file[1].active
       })
       .map((file) => file[0])
   }
@@ -140,5 +141,11 @@ export class DegovService {
       if (found) return true
     }
     return false
+  }
+
+  public async removeAllFiles() {
+    for (const url in this.governanceFiles) {
+      this.removeFile(url)
+    }
   }
 }
