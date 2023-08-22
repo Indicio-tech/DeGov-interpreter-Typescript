@@ -1,4 +1,5 @@
 import { DegovService } from "../services/DegovService"
+import { WebStorage } from "../utils/InternalStorage"
 import { governance } from "./test.Governance"
 import type fetch from "node-fetch"
 import { Response } from "node-fetch"
@@ -8,10 +9,10 @@ const fetcher = jest.fn(
     new Promise((res) => res(new Response(JSON.stringify(governance))))
 ) as (url: RequestInfo) => Promise<Response>
 
-const service = new DegovService(fetcher as typeof fetch)
+const service = new DegovService(fetcher as typeof fetch, new WebStorage())
 
 beforeEach(async () => {
-  await service.addFile("test.com")
+  await service.setFiles(["test.com"])
 })
 
 afterEach(async () => {
