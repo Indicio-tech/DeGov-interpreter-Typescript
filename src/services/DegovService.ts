@@ -192,9 +192,7 @@ export class DegovService {
    * Removes all files from the interpreter
    */
   public async removeAllFiles() {
-    for (const url in this.governanceFiles) {
-      await this.removeFile(url)
-    }
+    this.governanceFiles = {}
     await this.setInternalState()
   }
 }

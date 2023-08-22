@@ -11,12 +11,24 @@ const fetcher = jest.fn(
 
 const service = new DegovService(fetcher as typeof fetch, new WebStorage())
 
+beforeAll(async () => {
+  await service.init()
+})
+
 beforeEach(async () => {
   await service.setFiles(["test.com"])
 })
 
 afterEach(async () => {
   await service.removeAllFiles()
+})
+
+afterAll(async () => {
+  await service.addFile("leftOver.com")
+})
+
+test("Test if state is saved after a fresh load", async () => {
+  expect(await service.getFile("leftOver.com")).toEqual(governance)
 })
 
 test("Test if we can find the did in a governance file", async () => {
@@ -28,12 +40,13 @@ test("retreive the entire Governance file", async () => {
 })
 
 test("Remove a file that does not exist", () => {
-  expect(() => service.removeFile("test2.com")).toThrow("File does not exist")
+  expect(service.removeFile("test2.com")).rejects.toThrow("File does not exist")
 })
 
 test("Ensure a file that is added is saved", async () => {
   await service.addFile("newFile.com")
   expect(await service.getFile("newFile.com")).toEqual(governance)
+  await service.removeFile("newFile.com")
 })
 
 test("Attempt to get a file that does not exist", async () => {
@@ -61,4 +74,6 @@ test("Get a list of all active governance files", async () => {
 
   expect(active).toMatchObject(["test2.com", "test3.com"])
   expect(service.getAllInactiveFiles()).toMatchObject(["test.com"])
+  await service.removeFile("test2.com")
+  await service.removeFile("test3.com")
 })

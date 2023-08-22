@@ -1,4 +1,5 @@
 import type ReactStorage from "@react-native-async-storage/async-storage"
+import fs from "fs/promises"
 
 export interface InternalStorage {
   setItem(key: string, item: string): Promise<void>
@@ -7,20 +8,40 @@ export interface InternalStorage {
 }
 
 export class WebStorage implements InternalStorage {
-  setItem(key: string, item: string): Promise<void> {
+  private dictionary: { [key: string]: string } = {}
+
+  constructor() {
+    const init = async () => {
+      await fs.access("./DegovStorage", fs.constants.F_OK).catch(async () => {
+        await fs.mkdir("./DegovStorage")
+      })
+      const handle = await fs.open("./DegovStorage/WebStorage.json")
+      await handle.close()
+    }
+  }
+
+  async setItem(key: string, item: string): Promise<void> {
     try {
-      localStorage.setItem(key, item)
-      return new Promise(() => {})
+      this.dictionary[key] = item
+      await fs.writeFile(
+        "./DegovStorage/WebStorage.json",
+        JSON.stringify(this.dictionary)
+      )
+      return new Promise((resolve) => {
+        resolve()
+      })
     } catch (e: any) {
       console.log("Failed to set item with Error: ", e.message)
-      return new Promise((resolve, reject) => {
+      return new Promise((_resolve, reject) => {
         reject("Internal Error")
       })
     }
   }
-  getItem(key: string): Promise<string | null> {
+  async getItem(key: string): Promise<string | null> {
     try {
-      const item = localStorage.getItem(key)
+      const file = await fs.readFile("./DegovStorage/WebStorage.json")
+      this.dictionary = JSON.parse(file.toString())
+      const item = this.dictionary[key]
       return new Promise((resolve) => {
         resolve(item)
       })
@@ -31,10 +52,16 @@ export class WebStorage implements InternalStorage {
       })
     }
   }
-  deleteItem(key: string): Promise<void> {
+  async deleteItem(key: string): Promise<void> {
     try {
-      localStorage.removeItem(key)
-      return new Promise(() => {})
+      delete this.dictionary[key]
+      await fs.writeFile(
+        "./DegovStorage/WebStorage.json",
+        JSON.stringify(this.dictionary)
+      )
+      return new Promise((resolve) => {
+        resolve()
+      })
     } catch (e: any) {
       console.log("Failed to delete item with Error: ", e.message)
       return new Promise((resolve, reject) => {
