@@ -19,10 +19,14 @@ export const governance: GovernanceFile = {
     {
       id: "BXtzYPyPdiVKGAjkqtPexs:2:Email:1.0",
       name: "Email Credential Issuer",
+      issuer_roles: ["email_issuer"],
+      verifier_roles: ["email_verifier"],
     },
     {
       id: "QHqtjywxfP3yYsFrRHFLQm:2:Employment:1.0",
       name: "Employment Credential Issuer",
+      issuer_roles: ["employment_issuer"],
+      verifier_roles: ["employment_verifier"],
     },
   ],
   participants: {
