@@ -29,6 +29,12 @@ export class DegovService {
     const retreived = await this.internalStorage.getItem(savedKey)
     if (retreived) {
       this.governanceFiles = JSON.parse(retreived)
+      Object.entries(this.governanceFiles).forEach((curr, index) => {
+        this.governanceFiles[curr[0]] = {
+          ...this.governanceFiles[curr[0]],
+          lastFetched: new Date(curr[1].lastFetched),
+        }
+      })
     }
   }
   /**
@@ -160,7 +166,11 @@ export class DegovService {
   private async refetchFile(url: string): Promise<GovernanceFile> {
     const GovFile = await this.fetchFile(url)
     const lastFetched = new Date()
-    this.governanceFiles[url] = { GovFile, lastFetched, active: true }
+    this.governanceFiles[url] = {
+      GovFile,
+      lastFetched,
+      active: this.governanceFiles[url].active,
+    }
     return GovFile
   }
 
