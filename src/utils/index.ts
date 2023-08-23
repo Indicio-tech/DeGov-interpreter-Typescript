@@ -1,1 +1,2 @@
-export * from './Fetching'
+export * from "./Fetching"
+export * from "./InternalStorage"

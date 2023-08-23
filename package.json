@@ -1,6 +1,6 @@
 {
   "name": "degov-typescript",
-  "version": "0.0.1-activeTracking",
+  "version": "0.0.2-activeTracking",
   "type": "module",
   "devDependencies": {
     "@types/jest": "^29.4.0",
