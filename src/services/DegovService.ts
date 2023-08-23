@@ -7,7 +7,7 @@ export interface GovernanceFiles {
   [degGovUrl: string]: {
     GovFile: GovernanceFile
     lastFetched: Date
-    active: Boolean
+    active: boolean
   }
 }
 
@@ -37,11 +37,16 @@ export class DegovService {
       })
     }
   }
+
+  public getAllUrls() {
+    return Object.keys(this.governanceFiles)
+  }
+
   /**
    * retreives and sets the storage to conatin all degov files in the input array and saves state locally
    * @param urls a string array of urls to track
    */
-  public async setFiles(urls: [string]) {
+  public async setFiles(urls: string[]) {
     const files = await this.fetch.fetchAll(urls)
     files.map((file, index) => {
       const lastFetched = new Date()
@@ -112,7 +117,7 @@ export class DegovService {
    * @param url the url string that denotes the location of the governance file
    * @returns true or false is the file is active
    */
-  public isActiveFile(url: string): Boolean {
+  public isActiveFile(url: string): boolean {
     this.getFile(url)
     const active = this.governanceFiles[url].active
     return active

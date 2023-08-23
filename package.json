@@ -1,7 +1,11 @@
 {
   "name": "degov-typescript",
-  "version": "0.0.2-activeTracking",
+  "version": "0.1.0-activeTracking",
   "type": "module",
+  "main": "build/index",
+  "files": [
+    "build"
+  ],
   "devDependencies": {
     "@types/jest": "^29.4.0",
     "@types/node-fetch": "^2.6.2",
@@ -15,7 +19,7 @@
     "yarn": "^1.22.19"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "^1.19.2",
+    "@react-native-async-storage/async-storage": "^1.15.11",
     "node-fetch": "^2.0"
   },
   "scripts": {
