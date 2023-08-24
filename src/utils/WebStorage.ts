@@ -8,11 +8,9 @@ export class WebStorage implements InternalStorage {
   constructor(storage: typeof fs) {
     this.fs = storage
     const init = async () => {
-      await this.fs
-        .access("./DegovStorage", this.fs.constants.F_OK)
-        .catch(async () => {
-          await this.fs.mkdir("./DegovStorage")
-        })
+      await this.fs.access("./DegovStorage", 0).catch(async () => {
+        await this.fs.mkdir("./DegovStorage")
+      })
       const handle = await this.fs.open("./DegovStorage/WebStorage.json")
       await handle.close()
     }

@@ -1,6 +1,6 @@
 {
   "name": "degov-typescript",
-  "version": "0.1.0-activeTracking",
+  "version": "0.1.0",
   "type": "module",
   "main": "build/index",
   "files": [

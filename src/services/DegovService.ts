@@ -26,9 +26,9 @@ export class DegovService {
    * Attempts to retreive files from storage and resume previous state
    */
   public async init() {
-    const retreived = await this.internalStorage.getItem(savedKey)
-    if (retreived) {
-      this.governanceFiles = JSON.parse(retreived)
+    const retrieved = await this.internalStorage.getItem(savedKey)
+    if (retrieved) {
+      this.governanceFiles = JSON.parse(retrieved)
       Object.entries(this.governanceFiles).forEach((curr, index) => {
         this.governanceFiles[curr[0]] = {
           ...this.governanceFiles[curr[0]],
@@ -43,7 +43,7 @@ export class DegovService {
   }
 
   /**
-   * retreives and sets the storage to conatin all degov files in the input array and saves state locally
+   * retreives and sets the storage to contain all degov files in the input array and saves state locally
    * @param urls a string array of urls to track
    */
   public async setFiles(urls: string[]) {
@@ -53,7 +53,7 @@ export class DegovService {
       const GovFile = JSON.parse(file)
       this.governanceFiles[urls[index]] = { GovFile, lastFetched, active: true }
     })
-    await this.setInternalState()
+    await this.setInternalState(JSON.stringify(this.governanceFiles))
   }
 
   /**
@@ -63,7 +63,7 @@ export class DegovService {
   public async removeFile(url: string) {
     if (this.governanceFiles[url]) {
       delete this.governanceFiles[url]
-      await this.setInternalState()
+      await this.setInternalState(JSON.stringify(this.governanceFiles))
     } else {
       throw Error("File does not exist")
     }
@@ -76,7 +76,7 @@ export class DegovService {
     const GovFile = await this.fetchFile(url)
     const lastFetched = new Date()
     this.governanceFiles[url] = { GovFile, lastFetched, active: true }
-    await this.setInternalState()
+    await this.setInternalState(JSON.stringify(this.governanceFiles))
   }
   /**
    * get the file for this url and check the ttl time to determine if refetch needs to occur
@@ -95,7 +95,9 @@ export class DegovService {
       }
       return GovFile
     } else {
-      throw Error(`File with url ${url} does not exist`)
+      throw Error(
+        `File with url ${url} does not exist, make sure to add file before trying to get it`
+      )
     }
   }
   /**
@@ -154,7 +156,7 @@ export class DegovService {
   public async activateGovFile(url: string) {
     const file = this.governanceFiles[url]
     this.governanceFiles[url] = { ...file, active: true }
-    await this.setInternalState()
+    await this.setInternalState(JSON.stringify(this.governanceFiles))
   }
 
   /**
@@ -164,7 +166,7 @@ export class DegovService {
   public async deactivateGovFile(url: string) {
     const file = this.governanceFiles[url]
     this.governanceFiles[url] = { ...file, active: false }
-    await this.setInternalState()
+    await this.setInternalState(JSON.stringify(this.governanceFiles))
   }
 
   //fetch the file from the given url and update the storage
@@ -179,11 +181,8 @@ export class DegovService {
     return GovFile
   }
 
-  private async setInternalState() {
-    await this.internalStorage.setItem(
-      savedKey,
-      JSON.stringify(this.governanceFiles)
-    )
+  private async setInternalState(value: string) {
+    await this.internalStorage.setItem(savedKey, value)
   }
 
   private async fetchFile(url: string): Promise<GovernanceFile> {
@@ -208,6 +207,6 @@ export class DegovService {
    */
   public async removeAllFiles() {
     this.governanceFiles = {}
-    await this.setInternalState()
+    await this.setInternalState(JSON.stringify(this.governanceFiles))
   }
 }

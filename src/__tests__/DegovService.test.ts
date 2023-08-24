@@ -12,10 +12,6 @@ const fetcher = jest.fn(
 
 const service = new DegovService(fetcher as typeof fetch, new WebStorage(fs))
 
-beforeAll(async () => {
-  await service.init()
-})
-
 beforeEach(async () => {
   await service.setFiles(["test.com"])
 })
@@ -25,13 +21,19 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  await service.addFile("leftOver.com")
+  await fs.rm("./DegovStorage/WebStorage.json")
+  await fs.rmdir("./DegovStorage")
 })
 
 test("Test if state is saved after a fresh load", async () => {
-  console.log(await await service.getFile("leftOver.com"))
+  //Creating a new service and calling init will attempt to use an existing storage file
+  const newService = new DegovService(
+    fetcher as typeof fetch,
+    new WebStorage(fs)
+  )
+  await newService.init()
 
-  expect(await service.getFile("leftOver.com")).toEqual(governance)
+  expect(await newService.getFile("test.com")).toEqual(governance)
 })
 
 test("Test if we can find the did in a governance file", async () => {
