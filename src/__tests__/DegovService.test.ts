@@ -1,15 +1,16 @@
 import { DegovService } from "../services/DegovService"
-import { WebStorage } from "../utils/InternalStorage"
+import { WebStorage } from "../utils"
 import { governance } from "./test.Governance"
 import type fetch from "node-fetch"
-import { Response } from "node-fetch"
+import { Response, RequestInfo } from "node-fetch"
+import fs from "fs/promises"
 
 const fetcher = jest.fn(
   (url: string) =>
     new Promise((res) => res(new Response(JSON.stringify(governance))))
 ) as (url: RequestInfo) => Promise<Response>
 
-const service = new DegovService(fetcher as typeof fetch, new WebStorage())
+const service = new DegovService(fetcher as typeof fetch, new WebStorage(fs))
 
 beforeAll(async () => {
   await service.init()
@@ -28,6 +29,8 @@ afterAll(async () => {
 })
 
 test("Test if state is saved after a fresh load", async () => {
+  console.log(await await service.getFile("leftOver.com"))
+
   expect(await service.getFile("leftOver.com")).toEqual(governance)
 })
 
