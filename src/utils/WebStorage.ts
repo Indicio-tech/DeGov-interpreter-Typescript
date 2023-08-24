@@ -1,51 +1,50 @@
-import type fs from "fs/promises"
+import type promises from "fs/promises"
 import { InternalStorage } from "./InternalStorage"
 
 export class WebStorage implements InternalStorage {
   private dictionary: { [key: string]: string } = {}
-  private fs: typeof fs
+  private fs: typeof promises
 
-  constructor(storage: typeof fs) {
+  constructor(storage: typeof promises) {
     this.fs = storage
-    const init = async () => {
-      await this.fs.access("./DegovStorage", 0).catch(async () => {
-        await this.fs.mkdir("./DegovStorage")
+  }
+
+  async init(): Promise<void> {
+    await this.fs.access("./DegovStorage", 0).catch(async () => {
+      await this.fs.mkdir("./DegovStorage")
+    })
+    await this.fs
+      .access("./DegovStorage/WebStorage.json", 0)
+      .catch(async () => {
+        await this.fs.open("./DegovStorage/WebStorage.json", "w")
       })
-      const handle = await this.fs.open("./DegovStorage/WebStorage.json")
-      await handle.close()
-    }
   }
 
   async setItem(key: string, item: string): Promise<void> {
     try {
       this.dictionary[key] = item
-      await this.fs.writeFile(
-        "./DegovStorage/WebStorage.json",
-        JSON.stringify(this.dictionary)
-      )
-      return new Promise((resolve) => {
-        resolve()
-      })
+      const str = JSON.stringify(this.dictionary)
+      await this.fs.writeFile("./DegovStorage/WebStorage.json", str, "utf-8")
     } catch (e: any) {
       console.log("Failed to set item with Error: ", e.message)
-      return new Promise((_resolve, reject) => {
-        reject("Internal Error")
-      })
     }
   }
+
   async getItem(key: string): Promise<string | null> {
     try {
-      const file = await this.fs.readFile("./DegovStorage/WebStorage.json")
-      this.dictionary = JSON.parse(file.toString())
+      const file = await this.fs.readFile(
+        "./DegovStorage/WebStorage.json",
+        "utf-8"
+      )
+      if (file.length === 0) {
+        throw Error("File is Empty")
+      }
+      this.dictionary = JSON.parse(file)
       const item = this.dictionary[key]
-      return new Promise((resolve) => {
-        resolve(item)
-      })
+      return item
     } catch (e: any) {
       console.log("Failed to get item with Error: ", e.message)
-      return new Promise((resolve) => {
-        resolve(null)
-      })
+      return null
     }
   }
   async deleteItem(key: string): Promise<void> {
@@ -55,14 +54,8 @@ export class WebStorage implements InternalStorage {
         "./DegovStorage/WebStorage.json",
         JSON.stringify(this.dictionary)
       )
-      return new Promise((resolve) => {
-        resolve()
-      })
     } catch (e: any) {
       console.log("Failed to delete item with Error: ", e.message)
-      return new Promise((resolve, reject) => {
-        reject("Internal Error")
-      })
     }
   }
 }

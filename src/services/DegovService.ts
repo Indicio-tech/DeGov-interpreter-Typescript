@@ -26,6 +26,7 @@ export class DegovService {
    * Attempts to retreive files from storage and resume previous state
    */
   public async init() {
+    await this.internalStorage.init()
     const retrieved = await this.internalStorage.getItem(savedKey)
     if (retrieved) {
       this.governanceFiles = JSON.parse(retrieved)

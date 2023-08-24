@@ -12,8 +12,12 @@ const fetcher = jest.fn(
 
 const service = new DegovService(fetcher as typeof fetch, new WebStorage(fs))
 
+beforeAll(async () => {
+  await service.init()
+})
+
 beforeEach(async () => {
-  await service.setFiles(["test.com"])
+  await service.addFile("test.com")
 })
 
 afterEach(async () => {

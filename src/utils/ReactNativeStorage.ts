@@ -7,6 +7,7 @@ export class ReactNativeStorage implements InternalStorage {
   constructor(storage: typeof ReactStorage) {
     this.storage = storage
   }
+  async init() {}
 
   setItem(key: string, item: string): Promise<void> {
     return this.storage.setItem(key, item)
