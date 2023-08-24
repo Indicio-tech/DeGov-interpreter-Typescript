@@ -53,7 +53,7 @@ export class DegovService {
       const GovFile = JSON.parse(file)
       this.governanceFiles[urls[index]] = { GovFile, lastFetched, active: true }
     })
-    await this.setInternalState(JSON.stringify(this.governanceFiles))
+    await this.setInternalState(this.governanceFiles)
   }
 
   /**
@@ -63,7 +63,7 @@ export class DegovService {
   public async removeFile(url: string) {
     if (this.governanceFiles[url]) {
       delete this.governanceFiles[url]
-      await this.setInternalState(JSON.stringify(this.governanceFiles))
+      await this.setInternalState(this.governanceFiles)
     } else {
       throw Error("File does not exist")
     }
@@ -76,7 +76,7 @@ export class DegovService {
     const GovFile = await this.fetchFile(url)
     const lastFetched = new Date()
     this.governanceFiles[url] = { GovFile, lastFetched, active: true }
-    await this.setInternalState(JSON.stringify(this.governanceFiles))
+    await this.setInternalState(this.governanceFiles)
   }
   /**
    * get the file for this url and check the ttl time to determine if refetch needs to occur
@@ -156,7 +156,7 @@ export class DegovService {
   public async activateGovFile(url: string) {
     const file = this.governanceFiles[url]
     this.governanceFiles[url] = { ...file, active: true }
-    await this.setInternalState(JSON.stringify(this.governanceFiles))
+    await this.setInternalState(this.governanceFiles)
   }
 
   /**
@@ -166,7 +166,7 @@ export class DegovService {
   public async deactivateGovFile(url: string) {
     const file = this.governanceFiles[url]
     this.governanceFiles[url] = { ...file, active: false }
-    await this.setInternalState(JSON.stringify(this.governanceFiles))
+    await this.setInternalState(this.governanceFiles)
   }
 
   //fetch the file from the given url and update the storage
@@ -181,8 +181,8 @@ export class DegovService {
     return GovFile
   }
 
-  private async setInternalState(value: string) {
-    await this.internalStorage.setItem(savedKey, value)
+  private async setInternalState(value: GovernanceFiles) {
+    await this.internalStorage.setItem(savedKey, JSON.stringify(value))
   }
 
   private async fetchFile(url: string): Promise<GovernanceFile> {
@@ -207,6 +207,6 @@ export class DegovService {
    */
   public async removeAllFiles() {
     this.governanceFiles = {}
-    await this.setInternalState(JSON.stringify(this.governanceFiles))
+    await this.setInternalState(this.governanceFiles)
   }
 }
