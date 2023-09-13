@@ -2,6 +2,7 @@
 
 This repo contains a system to store and track governance files on both mobile and in react native. 
 
+### Dependencies
 Both mobile and web are dependent on fetch
 
 Mobile is dependent on [React Native Asynce Storage](https://www.npmjs.com/package/@react-native-async-storage/async-storage)
@@ -39,7 +40,7 @@ service.setFiles(["https://someUrl.com", "https://someOtherUrl.com"])
 1. Tracking active files
     * Files set as active are the only files dids are checked against
     * You can reteive a list of all active or inactive files denoted by their url
-2. Automatic refetch after ttl expirations
+2. Automatic refetch after ttl(time to live) expirations
     * Every governace file with a valid ttl is automatically refetched when you attempt to use it if it has expired
 3. Cached storage
     * Files are cached and only refetched when they have expired
