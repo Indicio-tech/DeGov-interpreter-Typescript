@@ -1,11 +1,11 @@
-# Degov Interpreter Typescript
+# DEGov Interpreter Typescript
 
 This repo contains a system to store and track governance files on both mobile and web. 
 
 ### Dependencies
 Both mobile and web are dependent on fetch
 
-Mobile is dependent on [React Native Asynce Storage](https://www.npmjs.com/package/@react-native-async-storage/async-storage)
+Mobile is dependent on [React Native Async Storage](https://www.npmjs.com/package/@react-native-async-storage/async-storage)
 
 Web is dependent on the [Node File system](https://nodejs.org/api/fs.html)
 
@@ -19,7 +19,7 @@ import fetch from ""
 //platform ie (ReactNativeStorage or WebStoreage)
 
 //Mobile
-const storage = ReactNativeStoreage(ReactStorage)
+const storage = ReactNativeStorage(ReactStorage)
 
 //Node
 const storage = WebStorage(promises)
