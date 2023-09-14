@@ -1,3 +1,4 @@
+//COPYRIGHT 2023 IndicioPBC
 import { GovernanceFile, JsonURI } from "../types"
 import type fetch from "node-fetch"
 import { Fetching } from "../utils"

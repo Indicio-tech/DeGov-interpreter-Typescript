@@ -1,3 +1,4 @@
+//COPYRIGHT 2023 IndicioPBC
 import type promises from "fs/promises"
 import { InternalStorage } from "./InternalStorage"
 

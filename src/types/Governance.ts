@@ -1,3 +1,4 @@
+//COPYRIGHT 2023 IndicioPBC
 export interface GovernanceFile {
   "@context": string[]
   author: string

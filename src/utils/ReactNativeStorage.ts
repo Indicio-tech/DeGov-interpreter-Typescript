@@ -1,3 +1,4 @@
+//COPYRIGHT 2023 IndicioPBC
 import type ReactStorage from "@react-native-async-storage/async-storage"
 import { InternalStorage } from "./InternalStorage"
 
