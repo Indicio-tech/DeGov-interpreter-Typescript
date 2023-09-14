@@ -39,7 +39,7 @@ service.setFiles(["https://someUrl.com", "https://someOtherUrl.com"])
 
 1. Tracking active files
     * Files set as active are the only files dids are checked against
-    * You can reteive a list of all active or inactive files denoted by their url
+    * You can retrieve a list of all active or inactive files denoted by their url
 2. Automatic refetch after ttl(time to live) expirations
     * Every governace file with a valid ttl is automatically refetched when you attempt to use it if it has expired
 3. Cached storage
