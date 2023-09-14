@@ -1,6 +1,6 @@
 # Degov Interpreter Typescript
 
-This repo contains a system to store and track governance files on both mobile and in react native. 
+This repo contains a system to store and track governance files on both mobile and web. 
 
 ### Dependencies
 Both mobile and web are dependent on fetch
