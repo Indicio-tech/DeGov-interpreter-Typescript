@@ -1,3 +1,4 @@
+//COPYRIGHT 2023 IndicioPBC
 import type promises from "fs/promises"
 import { InternalStorage } from "./InternalStorage"
 
@@ -43,7 +44,6 @@ export class WebStorage implements InternalStorage {
       const item = this.dictionary[key]
       return item
     } catch (e: any) {
-      console.log("Failed to get item with Error: ", e.message)
       return null
     }
   }
