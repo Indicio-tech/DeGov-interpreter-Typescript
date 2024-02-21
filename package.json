@@ -31,6 +31,5 @@
     "test": "jest",
     "build": "yarn run compile",
     "compile": "tsc -p tsconfig.json"
-  },
-  "dependencies": {}
+  }
 }

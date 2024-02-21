@@ -1,7 +1,7 @@
 //COPYRIGHT 2023 IndicioPBC
 import { GovernanceFile, JsonURI } from "../types"
 import type fetch from "node-fetch"
-import { Fetching } from "../utils"
+import { Fetching, JWTValidator } from "../utils"
 import { InternalStorage } from "../utils/InternalStorage"
 import { DidDocument } from "../types/DidDoc"
 
@@ -21,14 +21,17 @@ export class DegovService {
   private governanceFiles: GovernanceFiles = {}
   private fetch: Fetching
   private internalStorage: InternalStorage
+  private validator: JWTValidator | undefined
   private resolver: DidResolver | undefined
   public constructor(
     fetcher: typeof fetch,
     storage: InternalStorage,
+    validator: JWTValidator | undefined = undefined,
     didResolver: DidResolver | undefined = undefined
   ) {
     this.fetch = new Fetching(fetcher)
     this.internalStorage = storage
+    this.validator = validator
     this.resolver = didResolver
   }
 
@@ -54,7 +57,7 @@ export class DegovService {
   }
 
   /**
-   * retreives and sets the storage to contain all degov files in the input array and saves state locally
+   * retrieves and sets the storage to contain all degov files in the input array and saves state locally
    * @param urls a string array of urls to track
    */
   public async setFiles(urls: string[]) {
@@ -84,10 +87,14 @@ export class DegovService {
    * @param url The url of the file to add
    */
   public async addFile(url: string) {
-    const GovFile = await this.fetchFile(url)
-    const lastFetched = new Date()
-    this.governanceFiles[url] = { GovFile, lastFetched, active: true }
-    await this.setInternalState(this.governanceFiles)
+    try {
+      const GovFile = await this.fetchFile(url)
+      const lastFetched = new Date()
+      this.governanceFiles[url] = { GovFile, lastFetched, active: true }
+      await this.setInternalState(this.governanceFiles)
+    } catch (e) {
+      console.log(`Could not add governance file at url ${url}. Reason: ${e}`)
+    }
   }
   /**
    * get the file for this url and check the ttl time to determine if refetch needs to occur
@@ -126,7 +133,7 @@ export class DegovService {
   }
 
   /**
-   * Whether a governace file is active given the url that it lives at
+   * Whether a governance file is active given the url that it lives at
    * @param url the url string that denotes the location of the governance file
    * @returns true or false is the file is active
    */
@@ -137,7 +144,7 @@ export class DegovService {
   }
 
   /**
-   * Retreives all active governance files in the interpreter
+   * Retrieves all active governance files in the interpreter
    * @returns An array of url strings for the active files in the interpreter
    */
   public getAllActiveFiles() {
@@ -149,7 +156,7 @@ export class DegovService {
   }
 
   /**
-   * Retreives all inactive governance files in the interpreter
+   * Retrieves all inactive governance files in the interpreter
    * @returns An array of url strings for the inactive files in the interpreter
    */
   public getAllInactiveFiles() {
@@ -199,21 +206,23 @@ export class DegovService {
   private async fetchFile(url: string): Promise<GovernanceFile> {
     const lastFetched = new Date()
     const response = await this.fetch.fetchUrl(url)
-    let GovFile
-    try {
-      GovFile = JSON.parse(response) as GovernanceFile
-    } catch (error) {
-      GovFile = await this.verifyJWT(response)
-    }
+    let GovFile = JSON.parse(response) as
+      | GovernanceFile
+      | { governance: string }
+    if ("governance" in GovFile)
+      GovFile = await this.verifyJWT(GovFile.governance)
     this.governanceFiles[url] = { GovFile, lastFetched, active: true }
     return GovFile
   }
 
-  private async verifyJWT(response: string): Promise<GovernanceFile> {
-    const jwt = JSON.parse(response) as { governance: string }
-    const GovFile = jwtDecode(jwt.governance) as GovernanceFile
-    const kid = jwtDecode(jwt.governance, { header: true }).kid
-
+  private async verifyJWT(JWT: string): Promise<GovernanceFile> {
+    if (!this.validator)
+      throw Error(
+        "Cannot verify JWT for governance file because no validator was provided"
+      )
+    if (!this.resolver)
+      throw Error("Cannot validate JWT because no Did resolver was provided")
+    const did = this.validator.getKid(JWT)
     return {} as GovernanceFile
   }
 
