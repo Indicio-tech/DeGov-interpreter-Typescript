@@ -14,6 +14,7 @@ export interface GovernanceFile {
   schemas: Schema[]
   participants: Participant
   [property: string | number | symbol]: any
+  roles: Record<string, unknown>
 }
 
 export interface Schema {

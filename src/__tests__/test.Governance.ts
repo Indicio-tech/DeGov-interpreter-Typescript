@@ -1,4 +1,4 @@
-import { GovernanceFile } from "../types/Governance";
+import { GovernanceFile } from "../types/Governance"
 
 export const governance: GovernanceFile = {
   "@context": [
@@ -73,4 +73,4 @@ export const governance: GovernanceFile = {
       verify: ["BXtzYPyPdiVKGAjkqtPexs:2:Email:1.0"],
     },
   },
-};
+}

@@ -3,6 +3,7 @@ import { GovernanceFile, JsonURI } from "../types"
 import type fetch from "node-fetch"
 import { Fetching } from "../utils"
 import { InternalStorage } from "../utils/InternalStorage"
+import { DidDocument } from "../types/DidDoc"
 
 export interface GovernanceFiles {
   [degGovUrl: string]: {
@@ -12,19 +13,27 @@ export interface GovernanceFiles {
   }
 }
 
+export type DidResolver = (did: string) => Promise<DidDocument> | DidDocument
+
 const savedKey = "GovFiles"
 
 export class DegovService {
   private governanceFiles: GovernanceFiles = {}
   private fetch: Fetching
   private internalStorage: InternalStorage
-  public constructor(fetcher: typeof fetch, storage: InternalStorage) {
+  private resolver: DidResolver | undefined
+  public constructor(
+    fetcher: typeof fetch,
+    storage: InternalStorage,
+    didResolver: DidResolver | undefined = undefined
+  ) {
     this.fetch = new Fetching(fetcher)
     this.internalStorage = storage
+    this.resolver = didResolver
   }
 
   /**
-   * Attempts to retreive files from storage and resume previous state
+   * Attempts to retrieve files from storage and resume previous state
    */
   public async init() {
     await this.internalStorage.init()
@@ -190,9 +199,22 @@ export class DegovService {
   private async fetchFile(url: string): Promise<GovernanceFile> {
     const lastFetched = new Date()
     const response = await this.fetch.fetchUrl(url)
-    const GovFile = JSON.parse(response) as GovernanceFile
+    let GovFile
+    try {
+      GovFile = JSON.parse(response) as GovernanceFile
+    } catch (error) {
+      GovFile = await this.verifyJWT(response)
+    }
     this.governanceFiles[url] = { GovFile, lastFetched, active: true }
     return GovFile
+  }
+
+  private async verifyJWT(response: string): Promise<GovernanceFile> {
+    const jwt = JSON.parse(response) as { governance: string }
+    const GovFile = jwtDecode(jwt.governance) as GovernanceFile
+    const kid = jwtDecode(jwt.governance, { header: true }).kid
+
+    return {} as GovernanceFile
   }
 
   private async checkFileForDid(did: string, degov: GovernanceFile) {
