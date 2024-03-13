@@ -222,7 +222,18 @@ export class DegovService {
       )
     if (!this.resolver)
       throw Error("Cannot validate JWT because no Did resolver was provided")
-    const did = this.validator.getKid(JWT)
+    const didUrl = (await this.validator.getKid(JWT)).split("#")
+    const did = didUrl[0]
+    const verificationId = didUrl[1]
+    const doc = await this.resolver(did)
+    const verificationMethod = doc.verificationMethod?.find((method) => {
+      method.id == verificationId
+    })
+    if (!verificationMethod)
+      throw Error(
+        "Cannot validate JWT because matching verification method could not be found in didDoc"
+      )
+
     return {} as GovernanceFile
   }
 

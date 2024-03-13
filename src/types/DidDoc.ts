@@ -1,14 +1,13 @@
+import { Jwk, Key, KeyAlgs } from "@hyperledger/aries-askar-shared"
+import bs58 from "bs58"
+
 export interface VerificationMethod {
   id: string
   type: string
   controller: string
   publicKeyBase58?: string
   publicKeyBase64?: string
-  publicKeyJwk?: {
-    kty: string
-    use?: string
-    [key: string]: unknown
-  }
+  publicKeyJwk?: Jwk
   publicKeyHex?: string
   publicKeyMultibase?: string
   publicKeyPem?: string
@@ -28,4 +27,22 @@ export interface DidDocument {
   keyAgreement?: Array<string | VerificationMethod>
   capabilityInvocation?: Array<string | VerificationMethod>
   capabilityDelegation?: Array<string | VerificationMethod>
+}
+
+export function getKey(verificationMethod: VerificationMethod) {
+  if (verificationMethod.publicKeyBase58) {
+    const temp = bs58.decode(verificationMethod.publicKeyBase58)
+    return Key.fromPublicBytes({ algorithm: KeyAlgs.Ed25519, publicKey: temp })
+  }
+  if (verificationMethod.publicKeyBase64) {
+    const buf = Buffer.from(verificationMethod.publicKeyBase64, "base64")
+    return Key.fromPublicBytes({ algorithm: KeyAlgs.Ed25519, publicKey: buf })
+  }
+  if (verificationMethod.publicKeyJwk) {
+    return Key.fromJwk({ jwk: verificationMethod.publicKeyJwk })
+  }
+  if (verificationMethod.publicKeyHex) {
+    const buf = Buffer.from(verificationMethod.publicKeyHex, "hex")
+    return Key.fromPublicBytes({ algorithm: KeyAlgs.Ed25519, publicKey: buf })
+  }
 }
