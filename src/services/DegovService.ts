@@ -1,9 +1,11 @@
 //COPYRIGHT 2023 IndicioPBC
 import { GovernanceFile, JsonURI } from "../types"
 import type fetch from "node-fetch"
-import { Fetching, JWTValidator } from "../utils"
+import { Fetching } from "../utils"
 import { InternalStorage } from "../utils/InternalStorage"
-import { DidDocument } from "../types/DidDoc"
+import { DidDocument, getKey } from "../types/DidDoc"
+import { SigAlgs } from "@hyperledger/aries-askar-shared"
+import { JWTHeader } from "../types/JWT"
 
 export interface GovernanceFiles {
   [degGovUrl: string]: {
@@ -21,17 +23,14 @@ export class DegovService {
   private governanceFiles: GovernanceFiles = {}
   private fetch: Fetching
   private internalStorage: InternalStorage
-  private validator: JWTValidator | undefined
   private resolver: DidResolver | undefined
   public constructor(
     fetcher: typeof fetch,
     storage: InternalStorage,
-    validator: JWTValidator | undefined = undefined,
     didResolver: DidResolver | undefined = undefined
   ) {
     this.fetch = new Fetching(fetcher)
     this.internalStorage = storage
-    this.validator = validator
     this.resolver = didResolver
   }
 
@@ -39,6 +38,15 @@ export class DegovService {
    * Attempts to retrieve files from storage and resume previous state
    */
   public async init() {
+    try {
+      require("@hyperledger/aries-askar-nodejs")
+    } catch {
+      try {
+        require("@hyperledger/aries-askar-react-native")
+      } catch {
+        throw new Error("Could not load Aries Askar Bindings")
+      }
+    }
     await this.internalStorage.init()
     const retrieved = await this.internalStorage.getItem(savedKey)
     if (retrieved) {
@@ -216,13 +224,13 @@ export class DegovService {
   }
 
   private async verifyJWT(JWT: string): Promise<GovernanceFile> {
-    if (!this.validator)
-      throw Error(
-        "Cannot verify JWT for governance file because no validator was provided"
-      )
+    const arr = JWT.split(".")
+    const header = JSON.parse(
+      Buffer.from(arr[0]).toString("utf-8")
+    ) as JWTHeader
     if (!this.resolver)
       throw Error("Cannot validate JWT because no Did resolver was provided")
-    const didUrl = (await this.validator.getKid(JWT)).split("#")
+    const didUrl = header.kid.split("#")
     const did = didUrl[0]
     const verificationId = didUrl[1]
     const doc = await this.resolver(did)
@@ -233,8 +241,19 @@ export class DegovService {
       throw Error(
         "Cannot validate JWT because matching verification method could not be found in didDoc"
       )
+    const key = getKey(verificationMethod)
+    const didDocStr = Buffer.from(arr[1], "base64")
+    const verified = key.verifySignature({
+      message: didDocStr,
+      signature: Buffer.from(arr[2], "base64"),
+      sigType: SigAlgs.EdDSA,
+    })
 
-    return {} as GovernanceFile
+    if (verified) {
+      return JSON.parse(Buffer.from(didDocStr).toString("utf-8"))
+    }
+
+    throw Error("Could not verify JWT, signature validation failed.")
   }
 
   private async checkFileForDid(did: string, degov: GovernanceFile) {
