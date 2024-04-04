@@ -1,9 +1,32 @@
-import { DegovService } from "../services/DegovService"
+import { DegovService, DidResolver } from "../services/DegovService"
 import { WebStorage } from "../utils"
 import { governance, jwtGovernance } from "./test.Governance"
 import type fetch from "node-fetch"
 import { Response, RequestInfo } from "node-fetch"
 import fs from "fs/promises"
+import {
+  Agent,
+  DidsModule,
+  InitConfig,
+  KeyDidResolver,
+} from "@aries-framework/core"
+import { agentDependencies } from "@aries-framework/node"
+import { IndyVdrIndyDidResolver } from "@aries-framework/indy-vdr"
+import { DidDocument } from "../types"
+
+const config: InitConfig = {
+  label: "Degov-Agent",
+}
+
+const agent = new Agent({
+  config,
+  dependencies: agentDependencies,
+  modules: {
+    dids: new DidsModule({
+      resolvers: [new IndyVdrIndyDidResolver(), new KeyDidResolver()],
+    }),
+  },
+})
 
 const fetcher = jest.fn(
   (url: string) =>
@@ -15,14 +38,27 @@ const jwtFetcher = jest.fn(
     new Promise((res) => res(new Response(JSON.stringify(jwtGovernance))))
 ) as (url: RequestInfo) => Promise<Response>
 
-const service = new DegovService(fetcher as typeof fetch, new WebStorage(fs))
+const didResolver: DidResolver = async (did: string) => {
+  const result = await agent.dids.resolve(did)
+  if (!result.didDocument)
+    throw Error(`Could not resolve didDocument for did: ${did}`)
+  else return result.didDocument as DidDocument
+}
+
+const service = new DegovService(
+  fetcher as typeof fetch,
+  new WebStorage(fs),
+  didResolver
+)
 const jwtService = new DegovService(
   jwtFetcher as typeof fetch,
-  new WebStorage(fs)
+  new WebStorage(fs),
+  didResolver
 )
 
 beforeAll(async () => {
   await service.init()
+  await agent.initialize()
 })
 
 beforeEach(async () => {
@@ -36,6 +72,7 @@ afterEach(async () => {
 afterAll(async () => {
   await fs.rm("./DegovStorage/WebStorage.json")
   await fs.rmdir("./DegovStorage")
+  await agent.shutdown()
 })
 
 test("Test if state is saved after a fresh load", async () => {
@@ -53,7 +90,7 @@ test("Test if we can find the did in a governance file", async () => {
   expect(await service.checkDid("U9FXudo8rdCgsrpQ5EG2YY")).toBe(true)
 })
 
-test("retreive the entire Governance file", async () => {
+test("retrieve the entire Governance file", async () => {
   expect(await service.getFile("test.com")).toEqual(governance)
 })
 
@@ -96,4 +133,4 @@ test("Get a list of all active governance files", async () => {
   await service.removeFile("test3.com")
 })
 
-test("JWT verifcation", async () => {})
+test("JWT verification", async () => {})

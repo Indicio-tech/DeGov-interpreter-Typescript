@@ -15,7 +15,7 @@ export interface GovernanceFiles {
   }
 }
 
-export type DidResolver = (did: string) => Promise<DidDocument> | DidDocument
+export type DidResolver = (did: string) => Promise<DidDocument>
 
 const savedKey = "GovFiles"
 
