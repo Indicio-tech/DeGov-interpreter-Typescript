@@ -8,8 +8,11 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@aries-framework/core": "^0.4.0",
+    "@aries-framework/indy-vdr": "^0.4.2",
     "@aries-framework/node": "^0.4.0",
     "@hyperledger/aries-askar-nodejs": "^0.2.0",
+    "@aries-framework/askar": "^0.4.2",
+    "@hyperledger/indy-vdr-nodejs": "^0.2.1",
     "@react-native-async-storage/async-storage": "^1.15.11",
     "@types/jest": "^29.4.0",
     "@types/node-fetch": "^2.6.5",
@@ -32,9 +35,7 @@
     "compile": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@aries-framework/indy-vdr": "^0.4.2",
     "@hyperledger/aries-askar-shared": "^0.2.0",
-    "@hyperledger/indy-vdr-nodejs": "^0.2.1",
     "@multiformats/base-x": "^4.0.1"
   }
 }

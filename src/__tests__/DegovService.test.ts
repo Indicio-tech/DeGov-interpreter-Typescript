@@ -11,19 +11,42 @@ import {
   KeyDidResolver,
 } from "@aries-framework/core"
 import { agentDependencies } from "@aries-framework/node"
-import { IndyVdrIndyDidResolver } from "@aries-framework/indy-vdr"
+import {
+  IndyVdrIndyDidResolver,
+  IndyVdrModule,
+  IndyVdrSovDidResolver,
+} from "@aries-framework/indy-vdr"
+import { AskarModule } from "@aries-framework/askar"
 import { DidDocument } from "../types"
+import { ariesAskar } from "@hyperledger/aries-askar-shared"
+import { indyVdr } from "@hyperledger/indy-vdr-nodejs"
+import indyLedgers from "../ledgers/indy"
 
 const config: InitConfig = {
   label: "Degov-Agent",
+  walletConfig: {
+    id: "degov-wallet-id",
+    key: "testKey0000000000000000000000000",
+  },
 }
 
 const agent = new Agent({
   config,
   dependencies: agentDependencies,
   modules: {
+    askar: new AskarModule({
+      ariesAskar,
+    }),
+    indyVdr: new IndyVdrModule({
+      indyVdr,
+      networks: indyLedgers,
+    }),
     dids: new DidsModule({
-      resolvers: [new IndyVdrIndyDidResolver(), new KeyDidResolver()],
+      resolvers: [
+        new IndyVdrIndyDidResolver(),
+        new KeyDidResolver(),
+        new IndyVdrSovDidResolver(),
+      ],
     }),
   },
 })
@@ -41,8 +64,14 @@ const jwtFetcher = jest.fn(
 const didResolver: DidResolver = async (did: string) => {
   const result = await agent.dids.resolve(did)
   if (!result.didDocument)
-    throw Error(`Could not resolve didDocument for did: ${did}`)
-  else return result.didDocument as DidDocument
+    throw Error(
+      `Could not resolve didDocument for did: ${did}, reason: ${JSON.stringify(
+        result.didResolutionMetadata
+      )}`
+    )
+  else {
+    return result.didDocument as DidDocument
+  }
 }
 
 const service = new DegovService(
@@ -58,6 +87,7 @@ const jwtService = new DegovService(
 
 beforeAll(async () => {
   await service.init()
+  await jwtService.init()
   await agent.initialize()
 })
 
@@ -67,6 +97,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await service.removeAllFiles()
+  await jwtService.removeAllFiles()
 })
 
 afterAll(async () => {
@@ -133,4 +164,8 @@ test("Get a list of all active governance files", async () => {
   await service.removeFile("test3.com")
 })
 
-test("JWT verification", async () => {})
+test("JWT verification", async () => {
+  await jwtService.addFile("test1.com")
+  const file = await jwtService.getAllUrls()
+  console.log(file)
+}, 30_000)

@@ -9,3 +9,4 @@ logs/
 *.tgz
 DegovStorage
 .git
+yarn.lock

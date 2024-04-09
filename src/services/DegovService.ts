@@ -102,6 +102,7 @@ export class DegovService {
       await this.setInternalState(this.governanceFiles)
     } catch (e) {
       console.log(`Could not add governance file at url ${url}. Reason: ${e}`)
+      throw e
     }
   }
   /**
@@ -226,8 +227,9 @@ export class DegovService {
   private async verifyJWT(JWT: string): Promise<GovernanceFile> {
     const arr = JWT.split(".")
     const header = JSON.parse(
-      Buffer.from(arr[0]).toString("utf-8")
+      Buffer.from(arr[0], "base64").toString("utf-8")
     ) as JWTHeader
+    console.log(header)
     if (!this.resolver)
       throw Error("Cannot validate JWT because no Did resolver was provided")
     const didUrl = header.kid.split("#")
@@ -235,22 +237,23 @@ export class DegovService {
     const verificationId = didUrl[1]
     const doc = await this.resolver(did)
     const verificationMethod = doc.verificationMethod?.find((method) => {
-      method.id == verificationId
+      if (method.id === header.kid || method.id === verificationId) return true
     })
     if (!verificationMethod)
       throw Error(
         "Cannot validate JWT because matching verification method could not be found in didDoc"
       )
     const key = getKey(verificationMethod)
-    const didDocStr = Buffer.from(arr[1], "base64")
+    const govFile = Buffer.from(arr[1])
+    const signedPayload = Buffer.from(arr[0] + "." + arr[1])
     const verified = key.verifySignature({
-      message: didDocStr,
+      message: signedPayload,
       signature: Buffer.from(arr[2], "base64"),
       sigType: SigAlgs.EdDSA,
     })
 
     if (verified) {
-      return JSON.parse(Buffer.from(didDocStr).toString("utf-8"))
+      return JSON.parse(govFile.toString())
     }
 
     throw Error("Could not verify JWT, signature validation failed.")
