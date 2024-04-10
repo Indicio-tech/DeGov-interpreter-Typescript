@@ -6,6 +6,7 @@ import { InternalStorage } from "../utils/InternalStorage"
 import { DidDocument, getKey } from "../types/DidDoc"
 import { SigAlgs } from "@hyperledger/aries-askar-shared"
 import { JWTHeader } from "../types/JWT"
+import { Jwt } from "@aries-framework/core"
 
 export interface GovernanceFiles {
   [degGovUrl: string]: {
@@ -227,9 +228,8 @@ export class DegovService {
   private async verifyJWT(JWT: string): Promise<GovernanceFile> {
     const arr = JWT.split(".")
     const header = JSON.parse(
-      Buffer.from(arr[0], "base64").toString("utf-8")
+      Buffer.from(arr[0], "base64").toString()
     ) as JWTHeader
-    console.log(header)
     if (!this.resolver)
       throw Error("Cannot validate JWT because no Did resolver was provided")
     const didUrl = header.kid.split("#")
@@ -245,18 +245,19 @@ export class DegovService {
       )
     const key = getKey(verificationMethod)
     const govFile = Buffer.from(arr[1])
-    const signedPayload = Buffer.from(arr[0] + "." + arr[1])
+    const payload = arr[0] + "." + arr[1]
+    const signedPayload = Buffer.from(payload)
     const verified = key.verifySignature({
       message: signedPayload,
-      signature: Buffer.from(arr[2], "base64"),
+      signature: Buffer.from(arr[2], "base64url"),
       sigType: SigAlgs.EdDSA,
     })
 
     if (verified) {
       return JSON.parse(govFile.toString())
+    } else {
+      throw Error("Could not verify JWT, signature validation failed.")
     }
-
-    throw Error("Could not verify JWT, signature validation failed.")
   }
 
   private async checkFileForDid(did: string, degov: GovernanceFile) {
