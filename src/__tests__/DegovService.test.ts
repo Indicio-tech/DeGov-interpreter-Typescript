@@ -20,7 +20,7 @@ import { AskarModule } from "@aries-framework/askar"
 import { DidDocument } from "../types"
 import { ariesAskar } from "@hyperledger/aries-askar-shared"
 import { indyVdr } from "@hyperledger/indy-vdr-nodejs"
-import indyLedgers from "../ledgers/indy"
+import indyLedgers from "../../ledgers/indy"
 
 const config: InitConfig = {
   label: "Degov-Agent",
@@ -167,5 +167,5 @@ test("Get a list of all active governance files", async () => {
 test("JWT verification", async () => {
   await jwtService.addFile("test1.com")
   const file = await jwtService.getAllUrls()
-  console.log(file)
+  jwtService.checkDid("")
 }, 30_000)

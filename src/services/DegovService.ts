@@ -82,28 +82,33 @@ export class DegovService {
   /**
    * remove a file from the storage
    * @param url The url of the file to remove
+   * @returns Boolean indicating if the operation was a success
    */
   public async removeFile(url: string) {
     if (this.governanceFiles[url]) {
       delete this.governanceFiles[url]
       await this.setInternalState(this.governanceFiles)
+      return true
     } else {
       throw Error("File does not exist")
+      return false
     }
   }
   /**
    * add a file to storage
    * @param url The url of the file to add
+   * @returns Boolean indicating if the operation was a success
    */
-  public async addFile(url: string) {
+  public async addFile(url: string): Promise<Boolean> {
     try {
       const GovFile = await this.fetchFile(url)
       const lastFetched = new Date()
       this.governanceFiles[url] = { GovFile, lastFetched, active: true }
       await this.setInternalState(this.governanceFiles)
+      return true
     } catch (e) {
       console.log(`Could not add governance file at url ${url}. Reason: ${e}`)
-      throw e
+      return false
     }
   }
   /**
@@ -244,12 +249,12 @@ export class DegovService {
         "Cannot validate JWT because matching verification method could not be found in didDoc"
       )
     const key = getKey(verificationMethod)
-    const govFile = Buffer.from(arr[1])
+    const govFile = Buffer.from(arr[1], "base64")
     const payload = arr[0] + "." + arr[1]
-    const signedPayload = Buffer.from(payload)
+    const signedPayload = new Uint8Array(Buffer.from(payload))
     const verified = key.verifySignature({
       message: signedPayload,
-      signature: Buffer.from(arr[2], "base64url"),
+      signature: new Uint8Array(Buffer.from(arr[2], "base64url")),
       sigType: SigAlgs.EdDSA,
     })
 
