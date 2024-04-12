@@ -6,7 +6,6 @@ import { InternalStorage } from "../utils/InternalStorage"
 import { DidDocument, getKey } from "../types/DidDoc"
 import { SigAlgs } from "@hyperledger/aries-askar-shared"
 import { JWTHeader } from "../types/JWT"
-import { Jwt } from "@aries-framework/core"
 
 export interface GovernanceFiles {
   [degGovUrl: string]: {
