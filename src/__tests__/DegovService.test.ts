@@ -1,7 +1,7 @@
 import { DegovService, DidResolver } from "../services/DegovService"
 import { WebStorage } from "../utils"
 import { governance, jwtGovernance } from "./test.Governance"
-import type fetch from "node-fetch"
+import fetch from "node-fetch"
 import { Response, RequestInfo } from "node-fetch"
 import fs from "fs/promises"
 import {
@@ -85,6 +85,8 @@ const jwtService = new DegovService(
   didResolver
 )
 
+const realService = new DegovService(fetch, new WebStorage(fs), didResolver)
+
 beforeAll(async () => {
   await service.init()
   await jwtService.init()
@@ -166,6 +168,16 @@ test("Get a list of all active governance files", async () => {
 
 test("JWT verification", async () => {
   await jwtService.addFile("test1.com")
-  const file = await jwtService.getAllUrls()
-  jwtService.checkDid("")
+  const file = await jwtService.getFile("test1.com")
+  expect(jwtService.checkDid("did:example:round-n-proud")).toBeTruthy()
 }, 30_000)
+
+test("Fetch and process real degov file from proven", async () => {
+  await realService.addFile(
+    "https://proven-test-governance.indiciotech.io/governance/files/degov.json"
+  )
+  const file = await realService.getFile(
+    "https://proven-test-governance.indiciotech.io/governance/files/degov.json"
+  )
+  expect(await realService.checkDid("QF7etJUSrmtMUVUNdxYfun")).toBeTruthy()
+})

@@ -15,7 +15,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "outDir": "./build"
-   
   },
   "include" :["src/**/*.ts"],
   "exclude": ["node_modules", "build", "**/*.test.ts", "**/__tests__/*.ts", "**/__mocks__/*.ts", "**/build/**", "ledgers"]

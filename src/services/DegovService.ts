@@ -90,7 +90,6 @@ export class DegovService {
       return true
     } else {
       throw Error("File does not exist")
-      return false
     }
   }
   /**

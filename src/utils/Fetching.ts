@@ -1,5 +1,6 @@
 //COPYRIGHT 2023 IndicioPBC
 import type fetch from "node-fetch"
+import https from "https"
 
 export class Fetching {
   private fetch: typeof fetch
@@ -15,12 +16,17 @@ export class Fetching {
         accept: "application/json",
         "Content-Type": "application/json",
       },
+      // This allows us to get a governance file from a self signed cert but is a major security issue
+      // TODO: Remove this
+      agent: new https.Agent({
+        rejectUnauthorized: false,
+      }),
     })
     if (result.status == 200)
       return result.text() //strip file from response and return
     else
       throw new Error(
-        `An error occured fetching from ${url}, status code: ${result.status}`
+        `An error occurred fetching from ${url}, status code: ${result.status}`
       )
   }
 
