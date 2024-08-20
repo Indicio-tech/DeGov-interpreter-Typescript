@@ -90,6 +90,7 @@ const realService = new DegovService(fetch, new WebStorage(fs), didResolver)
 beforeAll(async () => {
   await service.init()
   await jwtService.init()
+  realService.init()
   await agent.initialize()
 })
 
@@ -100,6 +101,7 @@ beforeEach(async () => {
 afterEach(async () => {
   await service.removeAllFiles()
   await jwtService.removeAllFiles()
+  realService.removeAllFiles()
 })
 
 afterAll(async () => {

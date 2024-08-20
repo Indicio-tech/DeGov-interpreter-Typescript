@@ -272,6 +272,7 @@ export class DegovService {
     }
     return false
   }
+
   /**
    * Removes all files from the interpreter
    */

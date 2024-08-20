@@ -18,9 +18,9 @@ export class Fetching {
       },
       // This allows us to get a governance file from a self signed cert but is a major security issue
       // TODO: Remove this
-      agent: new https.Agent({
-        rejectUnauthorized: false,
-      }),
+      // agent: new https.Agent({
+      //   rejectUnauthorized: false,
+      // }),
     })
     if (result.status == 200)
       return result.text() //strip file from response and return
