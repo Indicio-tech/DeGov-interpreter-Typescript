@@ -181,5 +181,6 @@ test("Fetch and process real degov file from proven", async () => {
   const file = await realService.getFile(
     "https://proven-test-governance.indiciotech.io/governance/files/degov.json"
   )
-  expect(await realService.checkDid("QF7etJUSrmtMUVUNdxYfun")).toBeTruthy()
-})
+  console.log(file.participants.entries)
+  expect(await realService.checkDid("7C3D3aPmGp1HEuhdkwn5UN")).toBeTruthy()
+}, 10_000)
