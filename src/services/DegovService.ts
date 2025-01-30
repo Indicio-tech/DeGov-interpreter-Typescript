@@ -6,6 +6,7 @@ import { InternalStorage } from "../utils/InternalStorage"
 import { DidDocument, getKey } from "../types/DidDoc"
 import { SigAlgs } from "@hyperledger/aries-askar-shared"
 import { JWTHeader } from "../types/JWT"
+import { decodeJwt } from "../utils"
 
 export interface GovernanceFiles {
   [degGovUrl: string]: {
@@ -117,7 +118,8 @@ export class DegovService {
    */
   public async getFile(url: string) {
     if (this.governanceFiles[url]) {
-      let GovFile: GovernanceFile = this.governanceFiles[url].GovFile
+      let encoded = this.governanceFiles[url].GovFile
+      let GovFile: GovernanceFile = decodeJwt(encoded.governance)
       const last = this.governanceFiles[url].lastFetched
       const ttl = GovFile.ttl
       const lastFetched: Date = new Date()
