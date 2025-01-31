@@ -95,9 +95,7 @@ class DegovService {
     async getFile(url) {
         if (this.governanceFiles[url]) {
             let encoded = this.governanceFiles[url].GovFile;
-            console.log('encoded', encoded);
             let GovFile = (0, utils_2.decodeJwt)(encoded.governance);
-            console.log('gov file', GovFile);
             const last = this.governanceFiles[url].lastFetched;
             const ttl = GovFile.ttl;
             const lastFetched = new Date();
@@ -199,7 +197,6 @@ class DegovService {
     }
     async verifyJWT(JWT) {
         var _a;
-        console.log('recognizes the jwt');
         const arr = JWT.split(".");
         const header = JSON.parse(Buffer.from(arr[0], "base64").toString());
         if (!this.resolver)

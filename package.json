@@ -1,6 +1,6 @@
 {
   "name": "@indiciopbc/degov-interpreter-typescript",
-  "version": "0.1.4-jwt.7",
+  "version": "0.1.5",
   "main": "build/index",
   "files": [
     "build"
