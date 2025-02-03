@@ -3,6 +3,10 @@ import { GovernanceFile, JsonURI } from "../types"
 import type fetch from "node-fetch"
 import { Fetching } from "../utils"
 import { InternalStorage } from "../utils/InternalStorage"
+import { DidDocument, getKey } from "../types/DidDoc"
+import { SigAlgs } from "@hyperledger/aries-askar-shared"
+import { JWTHeader } from "../types/JWT"
+import { decodeJwt } from "../utils"
 
 export interface GovernanceFiles {
   [degGovUrl: string]: {
@@ -12,21 +16,38 @@ export interface GovernanceFiles {
   }
 }
 
+export type DidResolver = (did: string) => Promise<DidDocument>
+
 const savedKey = "GovFiles"
 
 export class DegovService {
   private governanceFiles: GovernanceFiles = {}
   private fetch: Fetching
   private internalStorage: InternalStorage
-  public constructor(fetcher: typeof fetch, storage: InternalStorage) {
+  private resolver: DidResolver | undefined
+  public constructor(
+    fetcher: typeof fetch,
+    storage: InternalStorage,
+    didResolver: DidResolver | undefined = undefined
+  ) {
     this.fetch = new Fetching(fetcher)
     this.internalStorage = storage
+    this.resolver = didResolver
   }
 
   /**
-   * Attempts to retreive files from storage and resume previous state
+   * Attempts to retrieve files from storage and resume previous state
    */
   public async init() {
+    try {
+      require("@hyperledger/aries-askar-nodejs")
+    } catch {
+      try {
+        require("@hyperledger/aries-askar-react-native")
+      } catch {
+        throw new Error("Could not load Aries Askar Bindings")
+      }
+    }
     await this.internalStorage.init()
     const retrieved = await this.internalStorage.getItem(savedKey)
     if (retrieved) {
@@ -45,7 +66,7 @@ export class DegovService {
   }
 
   /**
-   * retreives and sets the storage to contain all degov files in the input array and saves state locally
+   * retrieves and sets the storage to contain all degov files in the input array and saves state locally
    * @param urls a string array of urls to track
    */
   public async setFiles(urls: string[]) {
@@ -61,11 +82,13 @@ export class DegovService {
   /**
    * remove a file from the storage
    * @param url The url of the file to remove
+   * @returns Boolean indicating if the operation was a success
    */
   public async removeFile(url: string) {
     if (this.governanceFiles[url]) {
       delete this.governanceFiles[url]
       await this.setInternalState(this.governanceFiles)
+      return true
     } else {
       throw Error("File does not exist")
     }
@@ -73,12 +96,19 @@ export class DegovService {
   /**
    * add a file to storage
    * @param url The url of the file to add
+   * @returns Boolean indicating if the operation was a success
    */
-  public async addFile(url: string) {
-    const GovFile = await this.fetchFile(url)
-    const lastFetched = new Date()
-    this.governanceFiles[url] = { GovFile, lastFetched, active: true }
-    await this.setInternalState(this.governanceFiles)
+  public async addFile(url: string): Promise<Boolean> {
+    try {
+      const GovFile = await this.fetchFile(url)
+      const lastFetched = new Date()
+      this.governanceFiles[url] = { GovFile, lastFetched, active: true }
+      await this.setInternalState(this.governanceFiles)
+      return true
+    } catch (e) {
+      console.log(`Could not add governance file at url ${url}. Reason: ${e}`)
+      return false
+    }
   }
   /**
    * get the file for this url and check the ttl time to determine if refetch needs to occur
@@ -88,7 +118,8 @@ export class DegovService {
    */
   public async getFile(url: string) {
     if (this.governanceFiles[url]) {
-      let GovFile: GovernanceFile = this.governanceFiles[url].GovFile
+      let encoded = this.governanceFiles[url].GovFile
+      let GovFile: GovernanceFile = decodeJwt(encoded.governance)
       const last = this.governanceFiles[url].lastFetched
       const ttl = GovFile.ttl
       const lastFetched: Date = new Date()
@@ -117,7 +148,7 @@ export class DegovService {
   }
 
   /**
-   * Whether a governace file is active given the url that it lives at
+   * Whether a governance file is active given the url that it lives at
    * @param url the url string that denotes the location of the governance file
    * @returns true or false is the file is active
    */
@@ -128,7 +159,7 @@ export class DegovService {
   }
 
   /**
-   * Retreives all active governance files in the interpreter
+   * Retrieves all active governance files in the interpreter
    * @returns An array of url strings for the active files in the interpreter
    */
   public getAllActiveFiles() {
@@ -140,7 +171,7 @@ export class DegovService {
   }
 
   /**
-   * Retreives all inactive governance files in the interpreter
+   * Retrieves all inactive governance files in the interpreter
    * @returns An array of url strings for the inactive files in the interpreter
    */
   public getAllInactiveFiles() {
@@ -190,9 +221,48 @@ export class DegovService {
   private async fetchFile(url: string): Promise<GovernanceFile> {
     const lastFetched = new Date()
     const response = await this.fetch.fetchUrl(url)
-    const GovFile = JSON.parse(response) as GovernanceFile
+    let GovFile = JSON.parse(response) as
+      | GovernanceFile
+      | { governance: string }
+    if ("governance" in GovFile)
+      GovFile = await this.verifyJWT(GovFile.governance)
     this.governanceFiles[url] = { GovFile, lastFetched, active: true }
     return GovFile
+  }
+
+  private async verifyJWT(JWT: string): Promise<GovernanceFile> {
+    const arr = JWT.split(".")
+    const header = JSON.parse(
+      Buffer.from(arr[0], "base64").toString()
+    ) as JWTHeader
+    if (!this.resolver)
+      throw Error("Cannot validate JWT because no Did resolver was provided")
+    const didUrl = header.kid.split("#")
+    const did = didUrl[0]
+    const verificationId = didUrl[1]
+    const doc = await this.resolver(did)
+    const verificationMethod = doc.verificationMethod?.find((method) => {
+      if (method.id === header.kid || method.id === verificationId) return true
+    })
+    if (!verificationMethod)
+      throw Error(
+        "Cannot validate JWT because matching verification method could not be found in didDoc"
+      )
+    const key = getKey(verificationMethod)
+    const govFile = Buffer.from(arr[1], "base64")
+    const payload = arr[0] + "." + arr[1]
+    const signedPayload = new Uint8Array(Buffer.from(payload))
+    const verified = key.verifySignature({
+      message: signedPayload,
+      signature: new Uint8Array(Buffer.from(arr[2], "base64url")),
+      sigType: SigAlgs.EdDSA,
+    })
+
+    if (verified) {
+      return JSON.parse(govFile.toString())
+    } else {
+      throw Error("Could not verify JWT, signature validation failed.")
+    }
   }
 
   private async checkFileForDid(did: string, degov: GovernanceFile) {
@@ -204,6 +274,7 @@ export class DegovService {
     }
     return false
   }
+
   /**
    * Removes all files from the interpreter
    */
