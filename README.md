@@ -9,6 +9,27 @@ Mobile is dependent on [React Native Async Storage](https://www.npmjs.com/packag
 
 Web is dependent on the [Node File system](https://nodejs.org/api/fs.html)
 
+### Installation
+
+This package is published to GitHub Packages as `@indicio-tech/degov-interpreter-typescript`.
+Authenticate with a personal access token that has the `read:packages` scope, then point the scope at the GitHub registry:
+
+```
+# .npmrc (do not commit the token)
+@indicio-tech:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${NPM_TOKEN}
+```
+
+```
+yarn add @indicio-tech/degov-interpreter-typescript
+```
+
+### Releasing
+
+1. Update `version` in `package.json` and merge to `main`.
+2. Tag the merge commit `v<version>` and push the tag.
+3. The `Release` workflow verifies the tag matches `package.json`, runs tests, build and a production dependency audit, then (after approval of the `release` environment) publishes the tested tarball and creates a GitHub Release with the tarball and its SHA-256 checksum.
+
 ## How to use
 
 ```Typescript
